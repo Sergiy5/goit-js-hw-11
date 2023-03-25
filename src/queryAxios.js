@@ -5,10 +5,9 @@ export default class ImageApiService {
     this.serchQuery = '';
     this.page = 1;
   }
-  fetchArticles() {
+  async fetchArticles() {
     const BASE_URL = 'https://pixabay.com/api/';
-    
-   return axios
+    const response = await axios
      .get(`${BASE_URL}`, {
        params: {
          key: '34644212-a58abb2fa8dd8599bef437aea',
@@ -17,14 +16,12 @@ export default class ImageApiService {
          orientation: 'horizontal',
          safesearch: true,
          page: `${this.page}`,
-         per_page: 5,
+         per_page: 40,
        },
      })
-     .then(response => {
-       this.incrementPage();
-       console.log(this.page);
-       return response.data.hits;
-     });
+    console.log('class:', this.page)
+     this.incrementPage();
+   return response.data
   }
 
   get query() {
@@ -34,8 +31,10 @@ export default class ImageApiService {
     this.serchQuery = newQuery;
   }
   incrementPage() {
-    this.page += 1;
+      this.page += 1;
+  
   }
+
   resetPage() {
     this.page = 1
   }
