@@ -7,21 +7,22 @@ export default class ImageApiService {
   }
   async fetchArticles() {
     const BASE_URL = 'https://pixabay.com/api/';
-    const response = await axios
-     .get(`${BASE_URL}`, {
-       params: {
-         key: '34644212-a58abb2fa8dd8599bef437aea',
-         q: `${this.serchQuery}`,
-         image_type: 'photo',
-         orientation: 'horizontal',
-         safesearch: true,
-         page: `${this.page}`,
-         per_page: 40,
-       },
-     })
-    console.log('class:', this.page)
-     this.incrementPage();
-   return response.data
+    try {
+      const response = await axios
+        .get(`${BASE_URL}`, {
+          params: {
+            key: '34644212-a58abb2fa8dd8599bef437aea',
+            q: `${this.serchQuery}`,
+            image_type: 'photo',
+            orientation: 'horizontal',
+            safesearch: true,
+            page: `${this.page}`,
+            per_page: 40,
+          },
+        });
+    return response.data } catch (error) {
+      console.log(error.message)
+    }
   }
 
   get query() {

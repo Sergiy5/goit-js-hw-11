@@ -1,4 +1,3 @@
-
 import ImageApiService from './queryAxios';
 import Notiflix from 'notiflix';
 import { Loading } from 'notiflix/build/notiflix-loading-aio';
@@ -16,68 +15,73 @@ const imageApiService = new ImageApiService();
 
 refs.serchForm.addEventListener('submit', serchImage);
 refs.btnLoadMore.addEventListener('click', onLoadMore);
-refs.btnLoadMore.style.display = 'none'
+refs.btnLoadMore.style.display = 'none';
 
 async function serchImage(e) {
-    e.preventDefault();
+  e.preventDefault();
 
-  const eSearch = e.currentTarget.elements.searchQuery.value;
-  
-// Перевірка чи співпадає запит з вже з існуючим запитом
+  const eSearch = e.currentTarget.elements.searchQuery.value.trim();
+
+  // Перевірка чи співпадає запит з вже з існуючим запитом
   if (imageApiService.query !== eSearch) {
     onLoadSpiner();
-    
-  imageApiService.query = eSearch;
+    imageApiService.query = eSearch;
     imageApiService.resetPage();
     clearArticlesContainer();
+
     imageApiService
       .fetchArticles()
-      .then(articles => {
-        
-        if (articles.hits.length === 0) {
+      .then(images => {
+        if (images.hits.length === 0) {
           return notifyIfQueryEmpty();
         }
-        infoTotalHits(articles);
+        infoTotalHits(images);
         refs.btnLoadMore.style.display = 'block';
-        
-        return appendArticlesMarkup(articles);
+
+        return appendArticlesMarkup(images);
       })
-      .catch(e => console.log(e)).finally(response => { Loading.remove(); lightbox.refresh();});
-  } 
+      .catch(e => console.log(e))
+      // Вимкнення індикатора завантаження та оновлення simpleLightbox
+      .finally(images => {
+        Loading.remove();
+        lightbox.refresh();
+      });
+  }
 }
- 
+
 function onLoadMore() {
+  imageApiService.incrementPage();
   lightbox.refresh();
-      onLoadSpiner();
-      imageApiService
-        .fetchArticles()
-        .then(articles => {
-          // Визначення номеру останньої сторінки (округлення до набільшого)
-          const lastPage = Math.ceil(Number(articles.totalHits) / 40);
+  onLoadSpiner();
+  imageApiService
+    .fetchArticles()
+    .then(images => {
+      // Визначення номеру останньої сторінки (округлення до набільшого)
+      const lastPage = Math.ceil(Number(images.totalHits) / 40);
 
-          if (lastPage === imageApiService.page - 2) {
-            return onLastlHit(articles);
-          }
-          notifyTotalHits(articles);
-          appendArticlesMarkup(articles);
-        })
-        .catch(e => console.log(e))
-        .finally(Loading.remove());
-    }
+      if (lastPage === imageApiService.page - 1) {
+        return onLastlHit(images);
+      }
+      notifyTotalHits(images);
+      appendArticlesMarkup(images);
+    })
+    .catch(e => console.log(e))
+    .finally(Loading.remove());
+}
 
-function appendArticlesMarkup(articles) {
-    const markupArticles = articles.hits
-      .map(
-        ({
-          webformatURL,
-          tags,
-          likes,
-          views,
-          comments,
-          downloads,
-          largeImageURL,
-        }) => {
-          return `<a class="gallery__item" href="${largeImageURL}" >
+function appendArticlesMarkup(images) {
+  const markupArticles = images.hits
+    .map(
+      ({
+        webformatURL,
+        tags,
+        likes,
+        views,
+        comments,
+        downloads,
+        largeImageURL,
+      }) => {
+        return `<a class="gallery__item" href="${largeImageURL}" >
         <div class="photo-card">
   <img src="${webformatURL}" alt="${tags}" loading="lazy" />
   <div class="info">
@@ -95,15 +99,14 @@ function appendArticlesMarkup(articles) {
     </p>
   </div>
 </div></a>`;
-        }
-      )
-      .join('');
+      }
+    )
+    .join('');
   return refs.gallery.insertAdjacentHTML('beforeend', markupArticles);
-  
 }
 
 function clearArticlesContainer() {
-    refs.gallery.innerHTML = '';
+  refs.gallery.innerHTML = '';
 }
 
 function notifyIfQueryEmpty() {
@@ -112,30 +115,30 @@ function notifyIfQueryEmpty() {
   );
 }
 
-function onLastlHit(articles) {
-  refs.btnLoadMore.style.display = 'none';
-    Notiflix.Notify.info(
-      "We're sorry, but you've reached the end of search results."
-    ); 
+function onLastlHit(images) {
+      refs.btnLoadMore.style.display = 'none';
+  Notiflix.Notify.info(
+    "We're sorry, but you've reached the end of search results."
+    );
 }
 
-function infoTotalHits(articles) {
-  Notiflix.Notify.info(`Hooray! We found ${articles.totalHits} images.`);
+function infoTotalHits(images) {
+  Notiflix.Notify.info(`Hooray! We found ${images.totalHits} images.`);
 }
 
-function notifyTotalHits(articles) {
-  let allHits = articles.totalHits;
-  if (articles.totalHits > 40 ) {
+function notifyTotalHits(images) {
+  let allHits = images.totalHits;
+  if (images.totalHits > 40) {
     allHits =
-      Number(articles.totalHits) - 40 * Number(imageApiService.page - 2);
+      Number(images.totalHits) - 40 * Number(imageApiService.page - 1 );
   }
-  Notiflix.Notify.info(`Everything is left here ${allHits} images.`);
+  Notiflix.Notify.info(`Left ${allHits} images.`);
 }
 function onLoadSpiner() {
-  Loading.pulse({clickToClose: true, svgSize: '100px',});
+  Loading.pulse({ clickToClose: true, svgSize: '100px' });
 }
 
-const lightbox = new SimpleLightbox(".gallery a", {
+const lightbox = new SimpleLightbox('.gallery a', {
   captionsData: 'alt',
   captionDelay: 250,
 });
