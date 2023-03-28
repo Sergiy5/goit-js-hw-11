@@ -116,10 +116,10 @@ function notifyIfQueryEmpty() {
 }
 
 function onLastlHit(images) {
-      refs.btnLoadMore.style.display = 'none';
+  refs.btnLoadMore.style.display = 'none';
   Notiflix.Notify.info(
     "We're sorry, but you've reached the end of search results."
-    );
+  );
 }
 
 function infoTotalHits(images) {
@@ -129,8 +129,7 @@ function infoTotalHits(images) {
 function notifyTotalHits(images) {
   let allHits = images.totalHits;
   if (images.totalHits > 40) {
-    allHits =
-      Number(images.totalHits) - 40 * Number(imageApiService.page - 1 );
+    allHits = Number(images.totalHits) - 40 * Number(imageApiService.page - 1);
   }
   Notiflix.Notify.info(`Left ${allHits} images.`);
 }
